@@ -1,49 +1,101 @@
-# Social Network Analysis: Link Analysis using Facebook Dataset
+# Network Intelligence Engine
 
-## Description
-This project focuses on **Social Network Analysis (SNA)** using a real-world dataset from Facebook. It constructs a friendship network as a graph and performs comprehensive **Link Analysis** to identify influential individuals, community bridges, and the overall cohesion of the network.
+A production-grade, multi-platform network intelligence engine designed for career intelligence and relationship mapping. This system aggregates data from Facebook, LinkedIn, Twitter, and PowerMem to construct a unified social graph, resolve cross-platform identities, and compute advanced network metrics.
 
-By applying graph theory and network measures, the project answers critical questions about network connectivity, authority, and clustering.
+## Features
 
-## Key Features
-- **Graph Construction**: Transforming raw edge-list data into an undirected graph using `NetworkX`.
-- **Centrality Measures**:
-    - **Degree Centrality**: Identifying the most popular/well-connected nodes.
-    - **Closeness Centrality**: Measuring the reachability of nodes.
-    - **Betweenness Centrality**: Finding "gatekeepers" or bridges between communities.
-    - **Eigenvector Centrality**: Identifying influential nodes connected to other important nodes.
-- **Community Analysis**:
-    - Computing **Local Clustering Coefficients** to determine network density.
-    - Detecting and visualizing communities within the social network.
-- **Network Statistics**: Detailed metrics including Density, Diameter, and Average Shortest Path Length.
-- **Visualization**: Force-directed (Spring Layout) visualizations highlighting top hubs and distinct communities.
+- **Multi-Source Data Ingestion**: Load data from Facebook, LinkedIn, Twitter, and CSV/JSON.
+- **Cross-Platform Identity Resolution**: Automatically merge profiles representing the same person using weighted confidence scoring.
+- **Advanced Graph Analysis**: Compute Centrality (Degree, Closeness, Betweenness, Eigenvector, PageRank, Katz), Communities, and Pathfinding.
+- **Interactive Visualization**: Generate high-quality visualizations of networks, communities, and introduction paths.
+- **Structured Reporting**: Export analysis as JSON or human-readable Markdown briefings.
+- **PowerMem Integration**: Read/Write analysis results to a semantic memory store.
 
-## Dataset
-- **Source**: SNAP Facebook Combined Network (Stanford Large Network Dataset Collection).
-- **Details**: Contains anonymized mutual friendship data from survey participants.
-- **Format**: Edge list representing undirected connections.
+## Installation
 
-## Technologies Used
-- **Python**: Core programming language.
-- **NetworkX**: Comprehensive graph analysis and manipulation.
-- **Matplotlib**: Data visualization and graph plotting.
-- **NumPy & Pandas**: Data handling and statistical computations.
-- **Jupyter Notebook**: Interactive analysis environment.
+```bash
+git clone <repository-url>
+cd network_intelligence
+pip install -e .
+```
 
-## Installation & Setup
-1. Clone the repository or download the source files.
-2. Install the required dependencies:
-   ```bash
-   pip install networkx matplotlib numpy pandas
-   ```
-3. Open the `Social_Network_Analysis.ipynb` notebook in a Jupyter environment.
-4. Run all cells to download the dataset, process the graph, and view the analysis.
+## Quick Start
 
-## Analysis Results
-- **Most Influential Person**: Identified via Eigenvector Centrality (Node ID 1912).
-- **Core Bridge Node**: Identified via Betweenness Centrality (Node ID 107).
-- **Network Structure**: Determined to be **Tightly Connected** with a clustering coefficient of ~0.60.
-- **Centralization**: The network is **Moderately Centralized**, suggesting a balance between hubs and distributed connections.
+### 1. Analyze a specific company network
+```bash
+python -m network_intelligence --from-file relationships.csv --company "Egis Group" --all-centrality --visualize full
+```
 
-## Author
-*Analysis performed as part of a Social Network Analysis study.*
+### 2. Find an introduction path
+```bash
+python -m network_intelligence --from-all --client "Ahmed Elshenawy" --target "Sarah Johnson" --visualize path
+```
+
+### 3. Run full analysis and export report
+```bash
+python -m network_intelligence --from-facebook ./fb_data/ --company "TechCorp" --output-format markdown
+```
+
+## Configuration
+
+Configuration is managed via environment variables (see `network_intelligence/config.py`).
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `POWERMEM_URL` | `http://127.0.0.1:43117` | URL for PowerMem API |
+| `IDENTITY_CONFIDENCE_THRESHOLD` | `0.70` | Threshold to consider a match |
+| `IDENTITY_AUTO_MERGE_THRESHOLD` | `0.90` | Threshold to automatically merge identities |
+| `VIZ_DARK_MODE` | `true` | Enable dark mode for visualizations |
+
+## Data Sources
+
+The engine supports multiple input formats:
+
+- **Facebook**: SNAP edge list or JSON export.
+- **LinkedIn**: CSV exports from "Download Your Data".
+- **Twitter**: JSON archive or scraped data.
+- **CSV**: Generic edge list with columns `source`, `target`, `platform`.
+
+## Identity Resolution
+
+The system uses a weighted scoring algorithm to resolve identities across platforms:
+
+1. **Name Similarity** (30%)
+2. **Handle Similarity** (15%)
+3. **Company Match** (20%)
+4. **Title Match** (10%)
+5. **Mutual Connections** (25%)
+
+Matches with confidence ≥ 0.90 are auto-merged. Matches between 0.50 and 0.89 are flagged for review.
+
+## Visualization
+
+Generate publication-quality graphs:
+
+- **Full Network**: `python -m network_intelligence --visualize full`
+- **Communities**: `python -m network_intelligence --visualize communities`
+- **Path Analysis**: `python -m network_intelligence --visualize path --client A --target B`
+- **Centrality**: `python -m network_intelligence --visualize centrality`
+
+## Testing
+
+Run the test suite to verify functionality and regression against known baselines:
+
+```bash
+pip install -r requirements-dev.txt
+pytest tests/ -v
+```
+
+## Architecture
+
+```
+Data Sources (FB, LI, TW)
+       ↓
+Identity Resolution (Entity Merging)
+       ↓
+Graph Builder (MultiGraph Construction)
+       ↓
+Analysis Engine (Centrality, Pathfinding, Communities)
+       ↓
+Output & Visualization (JSON, Markdown, PNG)
+```
